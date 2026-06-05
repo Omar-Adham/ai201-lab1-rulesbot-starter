@@ -116,11 +116,20 @@ handle these cases better, at the cost of more implementation complexity.
 **Actual chunk count produced across all 8 rule books:**
 
 ```
-[your answer here]
+149 chunks total (confirmed via _collection.count() against the populated
+chroma_db). With chunk_size=300 and overlap=50, each chunk advances the window
+by 250 chars, so ~149 chunks implies roughly 37k characters of rule text across
+the 8 books after the min_length=50 filter discards short tail fragments.
 ```
 
 **One thing that surprised you or didn't match your expectations:**
 
 ```
-[your answer here]
+How often chunks start mid-word/mid-sentence — e.g. "iately if: the outbreak
+marker reaches 8..." or "x, that hex produces no resources...". Character-based
+windowing is blind to sentence boundaries, so the leading fragment is just
+whatever fell after the previous chunk's cut point. Retrieval still routes to
+the right game, but these ragged edges measurably raise distance scores
+(observed ~0.37–0.47 vs. the cleaner ~0.14 in the lab example) — a concrete
+case for a sentence-aware splitter as a future improvement.
 ```

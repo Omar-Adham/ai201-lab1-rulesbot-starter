@@ -68,5 +68,27 @@ def retrieve(query, n_results=N_RESULTS):
     if _collection.count() == 0:
         return []
 
-    # Your implementation here.
-    return []
+    # Run the semantic search. query_texts takes a list of query strings;
+    # ChromaDB embeds each one with the same model used at ingestion and
+    # returns the n_results closest chunks per query, sorted by distance.
+    results = _collection.query(
+        query_texts=[query],
+        n_results=n_results,
+        include=["documents", "metadatas", "distances"],
+    )
+
+    # query() returns nested lists — one inner list per query string. We
+    # passed a single query, so the actual results live at index [0].
+    documents = results["documents"][0]
+    metadatas = results["metadatas"][0]
+    distances = results["distances"][0]
+
+    chunks = []
+    for text, metadata, distance in zip(documents, metadatas, distances):
+        chunks.append({
+            "text": text,
+            "game": metadata.get("game", "Unknown"),
+            "distance": distance,
+        })
+
+    return chunks
